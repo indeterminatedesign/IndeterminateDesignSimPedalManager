@@ -35,7 +35,9 @@
             lblMessage = new ToolStripStatusLabel();
             tabConfigure = new TabControl();
             tabPageConfig = new TabPage();
-            settingsUserControl1 = new SettingsUserControl();
+            settingsClutch = new SettingsUserControl();
+            settingsBrake = new SettingsUserControl();
+            settingsThrottle = new SettingsUserControl();
             tabPageCalibrate = new TabPage();
             panelWizardContainer = new Panel();
             panelCalibrateEnd = new TableLayoutPanel();
@@ -120,10 +122,10 @@
             // 
             statusStrip1.ImageScalingSize = new Size(24, 24);
             statusStrip1.Items.AddRange(new ToolStripItem[] { lblStatus, lblMessage });
-            statusStrip1.Location = new Point(0, 968);
+            statusStrip1.Location = new Point(0, 938);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 13, 0);
-            statusStrip1.Size = new Size(1836, 32);
+            statusStrip1.Size = new Size(1499, 32);
             statusStrip1.TabIndex = 25;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -143,31 +145,52 @@
             tabConfigure.Controls.Add(tabPageConfig);
             tabConfigure.Controls.Add(tabPageCalibrate);
             tabConfigure.Controls.Add(tabPage1);
+            tabConfigure.Enabled = false;
             tabConfigure.Location = new Point(0, 12);
             tabConfigure.Name = "tabConfigure";
             tabConfigure.SelectedIndex = 0;
-            tabConfigure.Size = new Size(1800, 867);
+            tabConfigure.Size = new Size(1498, 867);
             tabConfigure.TabIndex = 26;
             // 
             // tabPageConfig
             // 
-            tabPageConfig.Controls.Add(settingsUserControl1);
+            tabPageConfig.Controls.Add(settingsClutch);
+            tabPageConfig.Controls.Add(settingsBrake);
+            tabPageConfig.Controls.Add(settingsThrottle);
             tabPageConfig.Location = new Point(4, 34);
             tabPageConfig.Name = "tabPageConfig";
             tabPageConfig.Padding = new Padding(3);
-            tabPageConfig.Size = new Size(1792, 829);
+            tabPageConfig.Size = new Size(1490, 829);
             tabPageConfig.TabIndex = 0;
             tabPageConfig.Text = "Configure";
             tabPageConfig.UseVisualStyleBackColor = true;
             // 
-            // settingsUserControl1
+            // settingsClutch
             // 
-            settingsUserControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            settingsUserControl1.Enabled = false;
-            settingsUserControl1.Location = new Point(8, 6);
-            settingsUserControl1.Name = "settingsUserControl1";
-            settingsUserControl1.Size = new Size(499, 611);
-            settingsUserControl1.TabIndex = 30;
+            settingsClutch.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            settingsClutch.Enabled = false;
+            settingsClutch.Location = new Point(992, 6);
+            settingsClutch.Name = "settingsClutch";
+            settingsClutch.Size = new Size(499, 611);
+            settingsClutch.TabIndex = 32;
+            // 
+            // settingsBrake
+            // 
+            settingsBrake.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            settingsBrake.Enabled = false;
+            settingsBrake.Location = new Point(499, 6);
+            settingsBrake.Name = "settingsBrake";
+            settingsBrake.Size = new Size(499, 611);
+            settingsBrake.TabIndex = 31;
+            // 
+            // settingsThrottle
+            // 
+            settingsThrottle.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            settingsThrottle.Enabled = false;
+            settingsThrottle.Location = new Point(8, 6);
+            settingsThrottle.Name = "settingsThrottle";
+            settingsThrottle.Size = new Size(499, 611);
+            settingsThrottle.TabIndex = 30;
             // 
             // tabPageCalibrate
             // 
@@ -175,7 +198,7 @@
             tabPageCalibrate.Location = new Point(4, 34);
             tabPageCalibrate.Name = "tabPageCalibrate";
             tabPageCalibrate.Padding = new Padding(3);
-            tabPageCalibrate.Size = new Size(2190, 829);
+            tabPageCalibrate.Size = new Size(1490, 829);
             tabPageCalibrate.TabIndex = 1;
             tabPageCalibrate.Text = "Calibration";
             tabPageCalibrate.UseVisualStyleBackColor = true;
@@ -499,19 +522,19 @@
             tabPage1.Location = new Point(4, 34);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(2190, 829);
+            tabPage1.Size = new Size(1490, 829);
             tabPage1.TabIndex = 2;
             tabPage1.Text = "Debug";
             tabPage1.UseVisualStyleBackColor = true;
             // 
             // txtDebug
             // 
-            txtDebug.Location = new Point(70, 31);
+            txtDebug.Location = new Point(8, 31);
             txtDebug.Multiline = true;
             txtDebug.Name = "txtDebug";
             txtDebug.ReadOnly = true;
-            txtDebug.ScrollBars = ScrollBars.Vertical;
-            txtDebug.Size = new Size(1813, 1042);
+            txtDebug.ScrollBars = ScrollBars.Both;
+            txtDebug.Size = new Size(1452, 747);
             txtDebug.TabIndex = 0;
             // 
             // label5
@@ -614,7 +637,7 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1836, 1000);
+            ClientSize = new Size(1499, 970);
             Controls.Add(tabConfigure);
             Controls.Add(statusStrip1);
             Controls.Add(buttonConnect);
@@ -693,9 +716,11 @@
         private Label label16;
         private Label label17;
         private Button btnFinishCalibration;
-        private SettingsUserControl settingsUserControl1;
+        private SettingsUserControl settingsThrottle;
         private TabPage tabPage1;
         private TextBox txtDebug;
         private ToolStripStatusLabel lblMessage;
+        private SettingsUserControl settingsBrake;
+        private SettingsUserControl settingsClutch;
     }
 }

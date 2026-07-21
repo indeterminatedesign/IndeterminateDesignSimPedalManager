@@ -30,16 +30,16 @@
         {
             label2 = new Label();
             label1 = new Label();
-            numThrottleMaxDeadzone = new NumericUpDown();
-            numThrottleMinDeadzone = new NumericUpDown();
+            numericMaxDeadzone = new NumericUpDown();
+            numericMinDeadzone = new NumericUpDown();
             lblThrottleRaw = new Label();
             numericUpDown80Percent = new NumericUpDown();
             numericUpDown60Percent = new NumericUpDown();
             numericUpDown40Percent = new NumericUpDown();
             numericUpDown20Percent = new NumericUpDown();
             pedalCurveControl1 = new PedalCurveControl();
-            ((System.ComponentModel.ISupportInitialize)numThrottleMaxDeadzone).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numThrottleMinDeadzone).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericMaxDeadzone).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericMinDeadzone).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown80Percent).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown60Percent).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown40Percent).BeginInit();
@@ -64,19 +64,21 @@
             label1.TabIndex = 28;
             label1.Text = "Bottom DeadZone";
             // 
-            // numThrottleMaxDeadzone
+            // numericMaxDeadzone
             // 
-            numThrottleMaxDeadzone.Location = new Point(277, 555);
-            numThrottleMaxDeadzone.Name = "numThrottleMaxDeadzone";
-            numThrottleMaxDeadzone.Size = new Size(86, 31);
-            numThrottleMaxDeadzone.TabIndex = 27;
+            numericMaxDeadzone.Location = new Point(277, 555);
+            numericMaxDeadzone.Name = "numericMaxDeadzone";
+            numericMaxDeadzone.Size = new Size(86, 31);
+            numericMaxDeadzone.TabIndex = 27;
+            numericMaxDeadzone.ValueChanged += numThrottleMaxDeadzone_ValueChanged;
             // 
-            // numThrottleMinDeadzone
+            // numericMinDeadzone
             // 
-            numThrottleMinDeadzone.Location = new Point(276, 516);
-            numThrottleMinDeadzone.Name = "numThrottleMinDeadzone";
-            numThrottleMinDeadzone.Size = new Size(86, 31);
-            numThrottleMinDeadzone.TabIndex = 26;
+            numericMinDeadzone.Location = new Point(276, 516);
+            numericMinDeadzone.Name = "numericMinDeadzone";
+            numericMinDeadzone.Size = new Size(86, 31);
+            numericMinDeadzone.TabIndex = 26;
+            numericMinDeadzone.ValueChanged += numThrottleMinDeadzone_ValueChanged;
             // 
             // lblThrottleRaw
             // 
@@ -139,14 +141,14 @@
             Controls.Add(pedalCurveControl1);
             Controls.Add(label2);
             Controls.Add(label1);
-            Controls.Add(numThrottleMaxDeadzone);
-            Controls.Add(numThrottleMinDeadzone);
+            Controls.Add(numericMaxDeadzone);
+            Controls.Add(numericMinDeadzone);
             Controls.Add(lblThrottleRaw);
             Name = "SettingsUserControl";
             Size = new Size(500, 600);
             Load += SettingsUserControl_Load;
-            ((System.ComponentModel.ISupportInitialize)numThrottleMaxDeadzone).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numThrottleMinDeadzone).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericMaxDeadzone).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericMinDeadzone).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown80Percent).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown60Percent).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown40Percent).EndInit();
@@ -158,8 +160,8 @@
         #endregion
         private Label label2;
         private Label label1;
-        private NumericUpDown numThrottleMaxDeadzone;
-        private NumericUpDown numThrottleMinDeadzone;
+        private NumericUpDown numericMaxDeadzone;
+        private NumericUpDown numericMinDeadzone;
         private Label lblThrottleRaw;
         private NumericUpDown numericUpDown80Percent;
         private NumericUpDown numericUpDown60Percent;
