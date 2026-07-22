@@ -18,12 +18,13 @@ namespace IndeterminateDesignSimPedalManager
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public long CurrentPedalValue
+        public short CurrentPedalPercent
         {
-            get => pedalCurveControl1.CurrentPedalValue;
+            get => pedalCurveControl1.CurrentPedalPercent;
             set
             {
-                pedalCurveControl1.CurrentPedalValue = value;
+                pedalCurveControl1.CurrentPedalPercent = value;
+
             }
         }
 
@@ -40,12 +41,12 @@ namespace IndeterminateDesignSimPedalManager
                     pedalCurveControl1.InputToOutputRatios = value;
                     pedalCurveControl1.Enabled = true;
                     _inputToOutputRatios = value;
-                    numericMinDeadzone.Value = _inputToOutputRatios[1];
+                    numericMinDeadzone.Value = _inputToOutputRatios[0];
                     numericUpDown20Percent.Value = _inputToOutputRatios[3];
                     numericUpDown40Percent.Value = _inputToOutputRatios[5];
                     numericUpDown60Percent.Value = _inputToOutputRatios[7];
                     numericUpDown80Percent.Value = _inputToOutputRatios[9];
-                    numericMaxDeadzone.Value = 100 - _inputToOutputRatios[11];  //Because top dead zone is a percentage of the whole range
+                    numericMaxDeadzone.Value = 100 - _inputToOutputRatios[10];  //Because top dead zone is a percentage of the whole range
                     this.Enabled = true;
                 }
                 finally
@@ -71,23 +72,23 @@ namespace IndeterminateDesignSimPedalManager
         private short LowerDeadZone
         {
             get => (_inputToOutputRatios != null && _inputToOutputRatios.Length > 1)
-                ? _inputToOutputRatios[1]
+                ? _inputToOutputRatios[0]
                 : Convert.ToInt16(0);
             set
             {
-                _inputToOutputRatios[1] = value;
+                _inputToOutputRatios[0] = value;
             }
         }
 
         private short UpperDeadZone
         {
             get => (_inputToOutputRatios != null && _inputToOutputRatios.Length > 1)
-                ? _inputToOutputRatios[11]
+                ? _inputToOutputRatios[10]
                 : Convert.ToInt16(0);
             set
             {
 
-                _inputToOutputRatios[11] = value;
+                _inputToOutputRatios[10] = value;
             }
         }
         public SettingsUserControl()
@@ -106,7 +107,7 @@ namespace IndeterminateDesignSimPedalManager
         {
             if (!_isLoading)
             {
-                _inputToOutputRatios[1] = Convert.ToInt16(numericUpDown20Percent.Value);
+                _inputToOutputRatios[3] = Convert.ToInt16(numericUpDown20Percent.Value);
                 pedalCurveControl1.Invalidate();
             }
         }
@@ -115,7 +116,7 @@ namespace IndeterminateDesignSimPedalManager
         {
             if (!_isLoading)
             {
-                _inputToOutputRatios[3] = Convert.ToInt16(numericUpDown40Percent.Value);
+                _inputToOutputRatios[5] = Convert.ToInt16(numericUpDown40Percent.Value);
                 pedalCurveControl1.Invalidate();
             }
         }
@@ -124,7 +125,7 @@ namespace IndeterminateDesignSimPedalManager
         {
             if (!_isLoading)
             {
-                _inputToOutputRatios[5] = Convert.ToInt16(numericUpDown60Percent.Value);
+                _inputToOutputRatios[7] = Convert.ToInt16(numericUpDown60Percent.Value);
                 pedalCurveControl1.Invalidate();
             }
         }
@@ -133,7 +134,7 @@ namespace IndeterminateDesignSimPedalManager
         {
             if (!_isLoading)
             {
-                _inputToOutputRatios[7] = Convert.ToInt16(numericUpDown80Percent.Value);
+                _inputToOutputRatios[9] = Convert.ToInt16(numericUpDown80Percent.Value);
                 pedalCurveControl1.Invalidate();
             }
         }

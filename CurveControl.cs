@@ -5,46 +5,47 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Reflection;
 
 namespace IndeterminateDesignSimPedalManager
 {
     public class PedalCurveControl : Control
     {
         private short[] _inputToOutputRatios = new short[12];
-        private long _currentPedalValue;
+        private short _currentPedalPercent;
         private string _curveName = "Default Curve"; // Added default string to prevent null draws
 
         private short LowerDeadZone
         {
             get => (_inputToOutputRatios != null && _inputToOutputRatios.Length > 1)
-                ? _inputToOutputRatios[1]
+                ? _inputToOutputRatios[0]
                 : (short)0;
             set
             {
-                _inputToOutputRatios[1] = value;
+                _inputToOutputRatios[0] = value;
             }
         }
 
         private short UpperDeadZone
         {
             get => (_inputToOutputRatios != null && _inputToOutputRatios.Length > 1)
-                ? _inputToOutputRatios[11]
+                ? _inputToOutputRatios[10]
                 : (short)0;
             set
             {
 
-                _inputToOutputRatios[11] = value;
+                _inputToOutputRatios[10] = value;
             }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public long CurrentPedalValue
+        public short CurrentPedalPercent
         {
-            get => _currentPedalValue;
+            get => _currentPedalPercent;
             set
             {
-                _currentPedalValue = value;
+                _currentPedalPercent = value;
                 Invalidate();
             }
         }
@@ -64,7 +65,7 @@ namespace IndeterminateDesignSimPedalManager
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string CurveName
         {
-            get => _curveName; // FIXED: Changed from CurveName to _curveName
+            get => _curveName;
             set { _curveName = value; Invalidate(); }
         }
 
@@ -109,7 +110,6 @@ namespace IndeterminateDesignSimPedalManager
                 g.DrawString(_curveName ?? "Pedal Curve", Font, textBrush, Width / 2, margin / 2, sf);
             }
 
-            // FIXED: Updated safety check layout to expect our 12-element (6 point) array layout
             if (_inputToOutputRatios == null || _inputToOutputRatios.Length < 12)
             {
                 DrawAxisTitles(g);
@@ -117,7 +117,7 @@ namespace IndeterminateDesignSimPedalManager
             }
 
 
-            using (System.Drawing.Drawing2D.HatchBrush deadzoneBrush = new System.Drawing.Drawing2D.HatchBrush(System.Drawing.Drawing2D.HatchStyle.BackwardDiagonal, Color.FromArgb(120, Color.Red), Color.Transparent))
+            using (System.Drawing.Drawing2D.HatchBrush deadzoneBrush = new System.Drawing.Drawing2D.HatchBrush(System.Drawing.Drawing2D.HatchStyle.BackwardDiagonal, Color.FromArgb(180, Color.Red), Color.Transparent))
             {
                 // Lower Deadzone: Shaded from 0 to Point 1 X
                 int lowerWidth = Convert.ToInt32(graphWidth * (LowerDeadZone / 100.0f));
@@ -169,9 +169,14 @@ namespace IndeterminateDesignSimPedalManager
                 g.DrawLine(referencePen, margin, margin + graphHeight, margin + graphWidth, margin);
             }
 
-            // FIXED: Convert all 6 curve nodes inside the flat layout cleanly to graphic screen spaces
+
+            //Draw the actual cruve
             int totalPoints = _inputToOutputRatios.Length / 2; // 12 elements / 2 variables each = 6 points
-            PointF[] curvePoints = new PointF[totalPoints];
+            PointF[] curvePoints = new PointF[totalPoints + 2];
+
+            //Add a point at 0,0 and 100,100 to show the flat line of the deadzones
+            curvePoints[0] = (new PointF(margin, margin + graphHeight));
+            curvePoints[totalPoints + 1] = (new PointF(margin + graphWidth, margin));
 
             for (int i = 0; i < totalPoints; i++)
             {
@@ -180,8 +185,10 @@ namespace IndeterminateDesignSimPedalManager
 
                 float x = margin + (input / 100.0f) * graphWidth;
                 float y = margin + graphHeight - (output / 100.0f) * graphHeight;
-                curvePoints[i] = new PointF(x, y);
+                curvePoints[i + 1] = new PointF(x, y);
             }
+
+
 
             // Draw curve line string paths
             using (Pen curvePen = new Pen(Color.Lime, 3))
@@ -198,20 +205,18 @@ namespace IndeterminateDesignSimPedalManager
                 }
             }
 
-            /*
-            // Draw current real-time pedal position track line
-            if (_pedalData.range > 0 && _currentPedalValue != 0)
+            if(CurrentPedalPercent > 0)
             {
-                float pedalPosition = (_currentPedalValue - _pedalData.startValue) / (float)_pedalData.range;
-                pedalPosition = Math.Clamp(pedalPosition, 0, 1);
-                float currentX = margin + pedalPosition * graphWidth;
-
-                using (Pen currentPen = new Pen(Color.Yellow, 2))
-                {
-                    g.DrawLine(currentPen, currentX, margin, currentX, margin + graphHeight);
-                }
+                int i = 0;
             }
-            */
+            //Draw the current Pedal Position
+            using (Pen currentPedal = new Pen(Color.Yellow, 3))
+            {
+                float verticalPosition = margin + graphWidth *(CurrentPedalPercent / 100.0f);
+                PointF start = new PointF(verticalPosition, margin);
+                PointF end = new PointF(verticalPosition, margin + graphHeight);
+                g.DrawLine(currentPedal, start, end);
+            }
 
             DrawAxisTitles(g);
         }

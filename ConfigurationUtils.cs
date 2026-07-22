@@ -23,7 +23,7 @@ namespace IndeterminateDesignSimPedalManager
 {
     public static class ConfigurationUtils
     {
-        public const UInt32 CONFIG_MAGIC_NUMBER = 0x5045444E;
+        public const UInt32 CONFIG_MAGIC_NUMBER = 0x5045444F;
 
        public static PedalData CreateDefaultPedal()
         {

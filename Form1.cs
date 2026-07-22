@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic;
 using System;
 using System.IO.Ports;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace IndeterminateDesignSimPedalManager
                         pedalsConnected = true;
 
 
-                        debugAppend( $"Successfully connected to pedals on port {testPort}!");
+                        debugAppend($"Successfully connected to pedals on port {testPort}!");
                         tabConfigure.Enabled = true;
                         StartAsyncPolling();
                         await LoadConfigurationFromPedalsAsync();
@@ -98,7 +99,7 @@ namespace IndeterminateDesignSimPedalManager
             }
 
 
-            debugAppend( "Could not find pedal hardware. Is it plugged in?");
+            debugAppend("Could not find pedal hardware. Is it plugged in?");
         }
 
 
@@ -119,15 +120,15 @@ namespace IndeterminateDesignSimPedalManager
             catch (Exception ex)
             {
 
-                debugAppend( $"Failed to open port: {ex.Message}");
+                debugAppend($"Failed to open port: {ex.Message}");
             }
         }
 
 
         private async Task PollDeviceAsync(CancellationToken cancellationToken)
         {
-            // Define a modern 100ms periodic timer
-            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+            // Define a modern 50ms periodic timer
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(50));
 
             try
             {
@@ -172,10 +173,10 @@ namespace IndeterminateDesignSimPedalManager
 
 
                                 lblStatus.Text = $"CONNECTED -- Raw Throttle: {rawThrottle} | Throttle: {throttle} | Raw Brake: {rawBrake}  | Brake: {brake} | Raw Clutch: {rawClutch} | Clutch: {clutch} ";
-                                
-                                if(calibrationActive)
+
+                                if (calibrationActive)
                                 {
-                                    if(configData.throttle.maxValue > rawThrottle)
+                                    if (configData.throttle.maxValue > rawThrottle)
                                     {
                                         lblThrottleMax.Text = rawThrottle.ToString();
                                         configData.throttle.maxValue = rawThrottle;
@@ -191,7 +192,7 @@ namespace IndeterminateDesignSimPedalManager
                                         configData.clutch.maxValue = rawClutch;
                                     }
                                 }
-                                                              
+
                                 currentThrottle = throttle;
                                 currentBrake = brake;
 
@@ -199,6 +200,24 @@ namespace IndeterminateDesignSimPedalManager
                                 currentRawThrottle = rawThrottle;
                                 currentRawBrake = rawBrake;
                                 currentRawClutch = rawClutch;
+
+                                //Calculate the current pedal position as a value from 0-100%
+                                float throttlePercent = (Math.Abs(Convert.ToSingle(currentRawThrottle - configData.throttle.startValue)) / configData.throttle.range) * 100.0f;
+                                if (throttlePercent >= 0 && throttlePercent <= 100)
+                                {
+                                    settingsThrottle.CurrentPedalPercent = Convert.ToInt16(throttlePercent);
+                                }
+                                float brakePercent = (Math.Abs(Convert.ToSingle(currentRawBrake - configData.brake.startValue)) / configData.brake.range) * 100.0f;
+                                if (brakePercent >= 0 && brakePercent <= 100)
+                                {
+                                    settingsBrake.CurrentPedalPercent = Convert.ToInt16(brakePercent);
+                                }
+                                float clutchPercent = (Math.Abs(Convert.ToSingle(currentRawClutch - configData.clutch.startValue)) / configData.clutch.range) * 100.0f;
+                                if (clutchPercent >= 0 && clutchPercent <= 100)
+                                {
+                                    settingsClutch.CurrentPedalPercent = Convert.ToInt16(clutchPercent);
+                                }
+
                             }
                         }
                     }
@@ -233,70 +252,70 @@ namespace IndeterminateDesignSimPedalManager
 
 
 
-private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUpload)
-    {
-        if (_pedalsPort == null || !_pedalsPort.IsOpen) return;
-
-        // 1. Force background telemetry polling loop to yield access to the serial pipeline channel
-        await _serialLock.WaitAsync();
-        try
+        private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUpload)
         {
-            // 2. Clear out any unread noise from the hardware input stream queue
-            _pedalsPort.DiscardInBuffer();
+            if (_pedalsPort == null || !_pedalsPort.IsOpen) return;
 
-            // 3. Configure string serialization properties to output clean camelCase variables matching ArduinoJson names
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            string jsonPayload = JsonSerializer.Serialize(dataToUpload, options);
-
-            // 4. Dispatch the entire text payload down to the controller in a single transaction line
-            _pedalsPort.WriteLine($"$UPDATE_CONFIG:{jsonPayload}");
-            _pedalsPort.ReadTimeout = 1500; // Giving the controller slightly more room to process the text parsing block
-
-            // 5. Monitor lines returning back over the virtual COM port channel
-            while (true)
+            // 1. Force background telemetry polling loop to yield access to the serial pipeline channel
+            await _serialLock.WaitAsync();
+            try
             {
-                string line;
-                try
-                {
-                    line = _pedalsPort.ReadLine().Trim();
-                }
-                catch (TimeoutException)
-                {
-                    debugAppend("Timed out waiting for device response.");
-                    return;
-                }
+                // 2. Clear out any unread noise from the hardware input stream queue
+                _pedalsPort.DiscardInBuffer();
 
-                // Log output tracking line to the debug view window
-                AppendDebugLine(line);
+                // 3. Configure string serialization properties to output clean camelCase variables matching ArduinoJson names
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                string jsonPayload = JsonSerializer.Serialize(dataToUpload, options);
 
-                // SUCCESS HANDSHAKE: Triggered when Arduino parses all 41 fields successfully
-                if (line == "$ACK:CONFIG_UPDATED")
-                {
-                    debugAppend("Configuration successfully applied to temporary microcontroller RAM!");
-                    return;
-                }
+                // 4. Dispatch the entire text payload down to the controller in a single transaction line
+                _pedalsPort.WriteLine($"$UPDATE_CONFIG:{jsonPayload}");
+                _pedalsPort.ReadTimeout = 1500; // Giving the controller slightly more room to process the text parsing block
 
-                // ERROR ESCAPE VALVE: Catch signature mismatches or parsing runtime blocks
-                if (line.StartsWith("$ERR:"))
+                // 5. Monitor lines returning back over the virtual COM port channel
+                while (true)
                 {
-                    debugAppend("Error: " + line);
-                    return;
+                    string line;
+                    try
+                    {
+                        line = _pedalsPort.ReadLine().Trim();
+                    }
+                    catch (TimeoutException)
+                    {
+                        debugAppend("Timed out waiting for device response.");
+                        return;
+                    }
+
+                    // Log output tracking line to the debug view window
+                    AppendDebugLine(line);
+
+                    // SUCCESS HANDSHAKE: Triggered when Arduino parses all 41 fields successfully
+                    if (line == "$ACK:CONFIG_UPDATED")
+                    {
+                        debugAppend("Configuration successfully applied to temporary microcontroller RAM!");
+                        return;
+                    }
+
+                    // ERROR ESCAPE VALVE: Catch signature mismatches or parsing runtime blocks
+                    if (line.StartsWith("$ERR:"))
+                    {
+                        debugAppend("Error: " + line);
+                        return;
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                debugAppend($"Error transmitting settings configuration payload: {ex.Message}");
+            }
+            finally
+            {
+                // 6. Release lock, restoring normal runtime dashboard telemetry collection reads
+                _serialLock.Release();
+            }
         }
-        catch (Exception ex)
-        {
-            debugAppend($"Error transmitting settings configuration payload: {ex.Message}");
-        }
-        finally
-        {
-            // 6. Release lock, restoring normal runtime dashboard telemetry collection reads
-            _serialLock.Release();
-        }
-    }
 
 
-    private async Task SaveConfigurationToFlashAsync()
+        private async Task SaveConfigurationToFlashAsync()
         {
             if (_pedalsPort == null || !_pedalsPort.IsOpen)
                 return;
@@ -316,12 +335,12 @@ private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUplo
                 if (response == "$ACK:SAVED")
                 {
 
-                    debugAppend( "Configuration saved to pedal flash memory.");
+                    debugAppend("Configuration saved to pedal flash memory.");
                 }
                 else
                 {
 
-                    debugAppend( $"Unexpected response: {response}");
+                    debugAppend($"Unexpected response: {response}");
                 }
             }
             finally
@@ -361,7 +380,7 @@ private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUplo
             configData.clutch.startValue = currentRawClutch;
 
             //We need to set the max values to the min value so we can track it to when the pedal moves to the end of it's ranges
-            configData.throttle.maxValue= currentRawThrottle;
+            configData.throttle.maxValue = currentRawThrottle;
             configData.brake.maxValue = currentRawBrake;
             configData.clutch.maxValue = currentRawClutch;
 
@@ -401,11 +420,12 @@ private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUplo
 
         private async Task saveSettingsAsync()
         {
-            await SaveConfigurationToFlashAsync();
             await UploadConfigurationToPedalsAsync(configData);
+            await SaveConfigurationToFlashAsync();
+
         }
 
-        private void LoadConfigDataObjectFromControls ()
+        private void LoadConfigDataObjectFromControls()
         {
             configData.throttle.inputToOutputRatios = (short[])settingsThrottle.InputToOutputRatios.Clone();
             configData.brake.inputToOutputRatios = (short[])settingsBrake.InputToOutputRatios.Clone();
@@ -462,11 +482,11 @@ private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUplo
                 lblClutchMin.Text = configData.clutch.startValue.ToString();
 
                 settingsThrottle.InputToOutputRatios = (short[])configData.throttle.inputToOutputRatios.Clone();
-                settingsThrottle.CurrentPedalValue = currentThrottle;
+
                 settingsBrake.InputToOutputRatios = (short[])configData.brake.inputToOutputRatios.Clone();
-                settingsBrake.CurrentPedalValue = currentBrake;
+
                 settingsClutch.InputToOutputRatios = (short[])configData.clutch.inputToOutputRatios.Clone();
-                settingsClutch.CurrentPedalValue = currentClutch;
+
 
 
 
@@ -482,7 +502,9 @@ private async Task UploadConfigurationToPedalsAsync(ConfigurationData dataToUplo
             txtDebug.AppendText("\r\n");
         }
 
+        private void btnLoadSettingsFromProfile_Click(object sender, EventArgs e)
+        {
 
-
+        }
     }
 }

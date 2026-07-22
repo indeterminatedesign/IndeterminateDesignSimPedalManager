@@ -82,6 +82,7 @@
             label1 = new Label();
             numThrottleMaxDeadzone = new NumericUpDown();
             numThrottleMinDeadzone = new NumericUpDown();
+            btnLoadSettingsFromProfile = new Button();
             statusStrip1.SuspendLayout();
             tabConfigure.SuspendLayout();
             tabPageConfig.SuspendLayout();
@@ -633,11 +634,22 @@
             numThrottleMinDeadzone.Size = new Size(86, 31);
             numThrottleMinDeadzone.TabIndex = 19;
             // 
+            // btnLoadSettingsFromProfile
+            // 
+            btnLoadSettingsFromProfile.Location = new Point(508, 887);
+            btnLoadSettingsFromProfile.Name = "btnLoadSettingsFromProfile";
+            btnLoadSettingsFromProfile.Size = new Size(200, 45);
+            btnLoadSettingsFromProfile.TabIndex = 27;
+            btnLoadSettingsFromProfile.Text = "&Load Profile";
+            btnLoadSettingsFromProfile.UseVisualStyleBackColor = true;
+            btnLoadSettingsFromProfile.Click += btnLoadSettingsFromProfile_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1499, 970);
+            Controls.Add(btnLoadSettingsFromProfile);
             Controls.Add(tabConfigure);
             Controls.Add(statusStrip1);
             Controls.Add(buttonConnect);
@@ -722,5 +734,6 @@
         private ToolStripStatusLabel lblMessage;
         private SettingsUserControl settingsBrake;
         private SettingsUserControl settingsClutch;
+        private Button btnLoadSettingsFromProfile;
     }
 }
