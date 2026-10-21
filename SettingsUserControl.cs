@@ -69,6 +69,16 @@ namespace IndeterminateDesignSimPedalManager
             }
         }
 
+        public void LoadFromPedalData(PedalData pedalData)
+        {
+            if (pedalData.inputToOutputRatios == null || pedalData.inputToOutputRatios.Length != 12)
+            {
+                throw new InvalidOperationException("The profile contains an invalid curve configuration.");
+            }
+
+            InputToOutputRatios = (short[])pedalData.inputToOutputRatios.Clone();
+        }
+
         private short LowerDeadZone
         {
             get => (_inputToOutputRatios != null && _inputToOutputRatios.Length > 1)

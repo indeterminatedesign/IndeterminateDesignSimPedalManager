@@ -22,6 +22,8 @@ namespace IndeterminateDesignSimPedalManager
         private Task? _pollingTask;
         private readonly SemaphoreSlim _serialLock = new(1, 1);
         private bool calibrationActive = false;
+        private bool brakeMaxManuallyEdited;
+        private bool updatingBrakeMaxTextBox;
 
         protected int currentThrottle;
         protected int currentBrake;
@@ -183,8 +185,13 @@ namespace IndeterminateDesignSimPedalManager
                                     }
                                     if (configData.brake.maxValue < rawBrake)
                                     {
-                                        lblBrakeMax.Text = rawBrake.ToString();
                                         configData.brake.maxValue = rawBrake;
+                                        if (!brakeMaxManuallyEdited)
+                                        {
+                                            updatingBrakeMaxTextBox = true;
+                                            lblBrakeMax.Text = rawBrake.ToString();
+                                            updatingBrakeMaxTextBox = false;
+                                        }
                                     }
                                     if (configData.clutch.maxValue > rawClutch)
                                     {
@@ -390,7 +397,10 @@ namespace IndeterminateDesignSimPedalManager
 
             //We do this so that the max isn't 0, we want the max to start as low (or high) as possible and then track from there
             lblThrottleMax.Text = configData.throttle.startValue.ToString();
+            brakeMaxManuallyEdited = false;
+            updatingBrakeMaxTextBox = true;
             lblBrakeMax.Text = configData.brake.startValue.ToString();
+            updatingBrakeMaxTextBox = false;
             lblClutchMax.Text = configData.clutch.startValue.ToString();
 
             panelCalibrateInitialPosition.Visible = false;
@@ -406,8 +416,24 @@ namespace IndeterminateDesignSimPedalManager
 
         private void btnFinishCalibration_Click(object sender, EventArgs e)
         {
+            if (!int.TryParse(lblBrakeMax.Text, out int brakeMax))
+            {
+                MessageBox.Show("Enter a valid brake value.", "Invalid brake value", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                lblBrakeMax.Focus();
+                return;
+            }
+
+            configData.brake.maxValue = brakeMax;
             calibrationActive = false;
             tabConfigure.SelectTab(0);
+        }
+
+        private void lblBrakeMax_TextChanged(object sender, EventArgs e)
+        {
+            if (!updatingBrakeMaxTextBox)
+            {
+                brakeMaxManuallyEdited = true;
+            }
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -416,6 +442,47 @@ namespace IndeterminateDesignSimPedalManager
 
             saveSettingsAsync();
 
+        }
+
+        private void btnSaveProfile_Click(object sender, EventArgs e)
+        {
+            if (!int.TryParse(lblBrakeMax.Text, out int brakeMax))
+            {
+                MessageBox.Show("Enter a valid brake value before saving the profile.", "Invalid brake value", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                lblBrakeMax.Focus();
+                return;
+            }
+
+            configData.brake.maxValue = brakeMax;
+            LoadConfigDataObjectFromControls();
+
+            string profilesDirectory = Path.Combine(AppContext.BaseDirectory, "Profiles");
+            Directory.CreateDirectory(profilesDirectory);
+
+            using SaveFileDialog dialog = new()
+            {
+                InitialDirectory = profilesDirectory,
+                Filter = "Pedal profile (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExt = "json",
+                AddExtension = true,
+                FileName = "PedalProfile.json",
+                Title = "Save Pedal Profile"
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                File.WriteAllText(dialog.FileName, ConfigurationUtils.SerializeProfile(configData));
+                debugAppend($"Profile saved to {dialog.FileName}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to save the profile: {ex.Message}", "Save Profile Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async Task saveSettingsAsync()
@@ -474,24 +541,31 @@ namespace IndeterminateDesignSimPedalManager
 
         private void UpdateUIFromConfig()
         {
-            // Make sure UI updates are dispatched back to the main UI thread safely
-            this.BeginInvoke(() =>
+            void updateControls()
             {
                 lblThrottleMin.Text = configData.throttle.startValue.ToString();
                 lblBrakeMin.Text = configData.brake.startValue.ToString();
                 lblClutchMin.Text = configData.clutch.startValue.ToString();
+                lblThrottleMax.Text = configData.throttle.maxValue.ToString();
+                lblClutchMax.Text = configData.clutch.maxValue.ToString();
+                updatingBrakeMaxTextBox = true;
+                lblBrakeMax.Text = configData.brake.maxValue.ToString();
+                updatingBrakeMaxTextBox = false;
+                brakeMaxManuallyEdited = false;
 
-                settingsThrottle.InputToOutputRatios = (short[])configData.throttle.inputToOutputRatios.Clone();
+                settingsThrottle.LoadFromPedalData(configData.throttle);
+                settingsBrake.LoadFromPedalData(configData.brake);
+                settingsClutch.LoadFromPedalData(configData.clutch);
+            }
 
-                settingsBrake.InputToOutputRatios = (short[])configData.brake.inputToOutputRatios.Clone();
-
-                settingsClutch.InputToOutputRatios = (short[])configData.clutch.inputToOutputRatios.Clone();
-
-
-
-
-                // Map deadzones, curve indices, and any other visual properties here...
-            });
+            if (InvokeRequired)
+            {
+                BeginInvoke(updateControls);
+            }
+            else
+            {
+                updateControls();
+            }
         }
 
         private void debugAppend(string Message)
@@ -504,7 +578,32 @@ namespace IndeterminateDesignSimPedalManager
 
         private void btnLoadSettingsFromProfile_Click(object sender, EventArgs e)
         {
+            string profilesDirectory = Path.Combine(AppContext.BaseDirectory, "Profiles");
+            Directory.CreateDirectory(profilesDirectory);
 
+            using OpenFileDialog dialog = new()
+            {
+                InitialDirectory = profilesDirectory,
+                Filter = "Pedal profile (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExt = "json",
+                Title = "Load Pedal Profile"
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                configData = ConfigurationUtils.DeserializeProfile(File.ReadAllText(dialog.FileName));
+                UpdateUIFromConfig();
+                debugAppend($"Profile loaded from {dialog.FileName}");
+            }
+            catch (Exception ex) when (ex is IOException || ex is JsonException || ex is InvalidOperationException)
+            {
+                MessageBox.Show($"Unable to load the profile: {ex.Message}", "Load Profile Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

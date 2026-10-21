@@ -45,7 +45,7 @@
             label8 = new Label();
             lblThrottleMax = new Label();
             lblClutchMax = new Label();
-            lblBrakeMax = new Label();
+            lblBrakeMax = new TextBox();
             label14 = new Label();
             label13 = new Label();
             label12 = new Label();
@@ -83,6 +83,7 @@
             numThrottleMaxDeadzone = new NumericUpDown();
             numThrottleMinDeadzone = new NumericUpDown();
             btnLoadSettingsFromProfile = new Button();
+            btnSaveProfile = new Button();
             statusStrip1.SuspendLayout();
             tabConfigure.SuspendLayout();
             tabPageConfig.SuspendLayout();
@@ -103,9 +104,9 @@
             // 
             buttonSave.Location = new Point(313, 885);
             buttonSave.Name = "buttonSave";
-            buttonSave.Size = new Size(171, 47);
+            buttonSave.Size = new Size(233, 47);
             buttonSave.TabIndex = 0;
-            buttonSave.Text = "&Save Settings";
+            buttonSave.Text = "&Save Settings to Pedals";
             buttonSave.UseVisualStyleBackColor = true;
             buttonSave.Click += buttonSave_Click;
             // 
@@ -305,12 +306,13 @@
             // 
             // lblBrakeMax
             // 
-            lblBrakeMax.AutoSize = true;
-            lblBrakeMax.Location = new Point(727, 376);
+            lblBrakeMax.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            lblBrakeMax.Location = new Point(727, 384);
             lblBrakeMax.Name = "lblBrakeMax";
-            lblBrakeMax.Size = new Size(26, 25);
+            lblBrakeMax.Size = new Size(250, 31);
             lblBrakeMax.TabIndex = 39;
             lblBrakeMax.Text = "--";
+            lblBrakeMax.TextChanged += lblBrakeMax_TextChanged;
             // 
             // label14
             // 
@@ -636,7 +638,7 @@
             // 
             // btnLoadSettingsFromProfile
             // 
-            btnLoadSettingsFromProfile.Location = new Point(508, 887);
+            btnLoadSettingsFromProfile.Location = new Point(568, 887);
             btnLoadSettingsFromProfile.Name = "btnLoadSettingsFromProfile";
             btnLoadSettingsFromProfile.Size = new Size(200, 45);
             btnLoadSettingsFromProfile.TabIndex = 27;
@@ -644,11 +646,22 @@
             btnLoadSettingsFromProfile.UseVisualStyleBackColor = true;
             btnLoadSettingsFromProfile.Click += btnLoadSettingsFromProfile_Click;
             // 
+            // btnSaveProfile
+            // 
+            btnSaveProfile.Location = new Point(781, 887);
+            btnSaveProfile.Name = "btnSaveProfile";
+            btnSaveProfile.Size = new Size(200, 45);
+            btnSaveProfile.TabIndex = 28;
+            btnSaveProfile.Text = "Save Profile";
+            btnSaveProfile.UseVisualStyleBackColor = true;
+            btnSaveProfile.Click += btnSaveProfile_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1499, 970);
+            Controls.Add(btnSaveProfile);
             Controls.Add(btnLoadSettingsFromProfile);
             Controls.Add(tabConfigure);
             Controls.Add(statusStrip1);
@@ -715,7 +728,7 @@
         private Label lblClutchRawLabel;
         private Label label10;
         private Label label11;
-        private Label lblBrakeMax;
+        private TextBox lblBrakeMax;
         private Label lblBrakeMin;
         private Label lblClutchMax;
         private Label lblClutchMin;
@@ -735,5 +748,6 @@
         private SettingsUserControl settingsBrake;
         private SettingsUserControl settingsClutch;
         private Button btnLoadSettingsFromProfile;
+        private Button btnSaveProfile;
     }
 }
